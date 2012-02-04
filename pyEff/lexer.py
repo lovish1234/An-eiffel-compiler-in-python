@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# calclex.py
+# lexer.py
 #
 # tokenizer for a simple expression evaluator for
 # numbers and +,-,*,/
@@ -103,6 +103,10 @@ tokens =  [
    #'BOOL',
    'DOT',
    'DQUOTES',
+   'HEXINT',
+   'OCTINT',
+   'CHARCONST',
+   'BININT'
 ]+ list(Keywords.values())
 
 
@@ -135,6 +139,27 @@ t_DQUOTES = r'"'
 def t_COMMENT(t):
     r'[-][-][^\n]+'
     pass
+#def t_CHARCONST(t):
+#	r'[\'][%][ABCDHFLNQRSTUV\%\'\"\)\(\<\>][\']'
+#	t.value=str(t.value)
+#	return t   
+def t_CHARCONST(t):
+	r'[\'][%][ABCDHFLNQRSTUV\%\'\"\)\(\<\>][\']'
+	t.value=str(t.value)
+	return t   
+def t_HEXINT (t) :
+	r'[0][xX][0-9a-fA-F]+'
+	t.value=str(t.value)
+	return t 
+def t_OCTINT(t):
+	r'[0][cC][0-7]+'
+	t.value=str(t.value)
+	return t
+#BININT needs to be corrected	
+def t_BININT(t):
+	r'[0][bB][0-1]+'
+	t.value=str(t.value)
+	return t	
 def t_REAL(t):
     r'[\d]*(\.\d*)([e|E](\+|\-)?\d+)?'
     #r'[\d]+(\.\d+)([e|E](\+|\-)?\d+)?'
@@ -151,10 +176,11 @@ def t_AND_THEN(t):
     r'and\sthen'
     t.value = str(t.value)    
     return t
-#def t_CHARACTER(t):
- #   r'[a-zA-Z]'
-  #  t.value = str(t.value)    
-   # return t
+def t_CHARACTER(t):
+    r'[\'][a-zA-Z][\']'
+    t.value = str(t.value)    
+    return t
+
 def t_BOOL(t):
 	r'[true|false|TRUE|FALSE]'
 	t.value=bool(t.value)
@@ -187,6 +213,11 @@ data = '''
 --10-- 
 --true
 --true TRUE FALSE lovish
+--VROOM = 0B1101
+'a'
+'%A'
+ROOM = 0c32434
+BOOM = 0xabc234
 NEGETIVE = -567
 REAL = 3.14159265358979323846 ""
 --  + -20 or 2

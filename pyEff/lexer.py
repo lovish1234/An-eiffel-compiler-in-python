@@ -106,13 +106,17 @@ tokens =  [
    'HEXINT',
    'OCTINT',
    'CHARCONST',
-   'BININT'
+   'BININT',
+   'STRING'
 ]+ list(Keywords.values())
 
 
 
-
-
+#string type required for "Hello , World " in this programe
+def t_STRING(t):
+	r'[\"][^\"]+[\"]'
+	t.value=str(t.value)
+	return t
 # Regular expression rules for simple tokens
 t_PLUS    = r'\+'
 t_MINUS   = r'-'
@@ -139,10 +143,7 @@ t_DQUOTES = r'"'
 def t_COMMENT(t):
     r'[-][-][^\n]+'
     pass
-#def t_CHARCONST(t):
-#	r'[\'][%][ABCDHFLNQRSTUV\%\'\"\)\(\<\>][\']'
-#	t.value=str(t.value)
-#	return t   
+
 def t_CHARCONST(t):
 	r'[\'][%][ABCDHFLNQRSTUV\%\'\"\)\(\<\>][\']'
 	t.value=str(t.value)
@@ -157,7 +158,7 @@ def t_OCTINT(t):
 	return t
 #BININT needs to be corrected	
 def t_BININT(t):
-	r'[0][bB][0-1]+'
+	r'[0][bB][01]+'
 	t.value=str(t.value)
 	return t	
 def t_REAL(t):
@@ -214,13 +215,26 @@ data = '''
 --true
 --true TRUE FALSE lovish
 --VROOM = 0B1101
-'a'
-'%A'
-ROOM = 0c32434
-BOOM = 0xabc234
-NEGETIVE = -567
-REAL = 3.14159265358979323846 ""
+--'a'
+--'%A'
+--ROOM = 0c32434
+--BOOM = 0xabc234
+--NEGETIVE = -567
+--REAL = 3.14159265358979323846 ""
 --  + -20 or 2
+VROOM = 0B1001
+class
+  	  HELLO
+  create
+    	  make
+  feature
+	  make
+		do
+			io.put_string ("Hello, world! %N ")
+			io.put_new_line
+                end
+  end
+ 
 '''
 
 # Give the lexer some input

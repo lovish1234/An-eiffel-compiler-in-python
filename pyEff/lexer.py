@@ -71,7 +71,7 @@ Keywords = {
 	'select' : 'SELECT',
 	'seperate' : 'SEPERATE',
 	'undefine' : 'UNDEFINE',
-	
+
 }
 tokens =  [
    'INTEGER',
@@ -100,14 +100,21 @@ tokens =  [
    'IDENTIFIER',
    'COMMENT',
    #added
-   #'BOOL',
+   'BOOL',
+   'COLON',
    'DOT',
+   'LCUR_PARN',
+   'RCUR_PARN',
+   'LSQUARE',
+   'RSQUARE',
    'DQUOTES',
    'HEXINT',
    'OCTINT',
    'CHARCONST',
    'BININT',
-   'STRING'
+   'STRING',
+   'COMMA',
+   'AT_SIGN'
 ]+ list(Keywords.values())
 
 
@@ -134,10 +141,15 @@ t_GREATER_EQUAL = r'>='
 t_LESS_EQUAL = r'<='
 t_SEPARTOR = r';'
 #added
-t_DOT = r'.'
+t_DOT = r'\.'
 t_DQUOTES = r'"'
-
-
+t_COLON =r'\:'
+t_LCUR_PARN=r'\{'
+t_RCUR_PARN=r'\}'
+t_LSQUARE = r'\['
+t_RSQUARE = r'\]'
+t_COMMA = r'\,'
+t_AT_SIGN = r'\@'
 # A regular expression rule with some action code
 
 def t_COMMENT(t):
@@ -162,7 +174,7 @@ def t_BININT(t):
 	t.value=str(t.value)
 	return t	
 def t_REAL(t):
-    r'[\d]*(\.\d*)([e|E](\+|\-)?\d+)?'
+    r'[\d]+(\.)\d*([e|E](\+|\-)?\d+)?  | [\d]+([e|E](\+|\-)?\d+) | [\d]*(\.)\d+([e|E](\+|\-)?\d+)?'
     #r'[\d]+(\.\d+)([e|E](\+|\-)?\d+)?'
     return t    
 def t_INTEGER(t):
@@ -183,8 +195,10 @@ def t_CHARACTER(t):
     return t
 
 def t_BOOL(t):
-	r'[true|false|TRUE|FALSE]'
-	t.value=bool(t.value)
+    r'[\s][true|false|TRUE|FALSE][\s]'
+    t.value= bool(t.value)
+    print t
+    pass	
 def t_IDENTIFIER(t):
     r'[a-zA-Z]\w*'
     t.type= Keywords.get(t.value,'IDENTIFIER')    # Check for reserved words   
@@ -209,32 +223,40 @@ lexer = lex.lex()
 
 
 # Test it out
+##data = '''
+##--3<= 3and d_ sdd3= + 4 and or or or else
+##--10-- 
+##true true TRUE FALSE lovish
+##--VROOM = 0B1101
+##--'a'
+##--'%A'
+##--ROOM = 0c32434
+##--BOOM = 0xabc234
+##--NEGETIVE = -567
+##--REAL = 3.14159265358979323846 ""
+##--  + -20 or 2
+##VROOM = 0B1001
+##class
+##  	  HELLO
+##  create
+##    	  make
+##  feature
+##	  make
+##		do
+##			io.put_string ("Hello, world! %N ")
+##			io.put_new_line
+##                end
+##  end
+## 
+##'''
 data = '''
---3<= 3and d_ sdd3= + 4 and or or or else
---10-- 
---true
---true TRUE FALSE lovish
---VROOM = 0B1101
---'a'
---'%A'
---ROOM = 0c32434
---BOOM = 0xabc234
---NEGETIVE = -567
---REAL = 3.14159265358979323846 ""
---  + -20 or 2
-VROOM = 0B1001
-class
-  	  HELLO
-  create
-    	  make
-  feature
-	  make
-		do
-			io.put_string ("Hello, world! %N ")
-			io.put_new_line
-                end
-  end
- 
+1.
+1.2
+.2
+.2e4
+1.2e4
+1e4
+1
 '''
 
 # Give the lexer some input

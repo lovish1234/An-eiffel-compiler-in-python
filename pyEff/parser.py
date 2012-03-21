@@ -3,6 +3,81 @@ import pyl.yacc as yacc
 import lex as lex
 from lex import	 tokens
 
+<<<<<<< HEAD
+
+
+class Attribute:
+    global MaxPar
+    def __init__(self):
+            self.id = ""
+            self.type = None
+            self.isArray = 0    #// True if variable is array
+            self.ArrayLimit = 0 # upper limit of array (valid if DIMENSION is true)
+            self.width = 0
+            self.isPointer = 0
+            self.qualifier = 0
+            self.specifier = 0
+            self.storage = 0
+            self.scope = 0
+            self.value=None    
+            self.isFunction = 0
+            self.numParameters = 0
+            self.isString = 0
+            self.offset = 0
+            self.parameterList = [None]*MaxPar
+
+
+def copyAttribute(a1):      
+      i = 0
+      a = Attribute()
+      a.id=None
+      if a1.id != None:
+          a.id = a1.id
+
+      a.type=a1.type
+      a.isArray=a1.isArray
+      a.ArrayLimit=a1.ArrayLimit
+      a.width=a1.width
+      a.isPointer=a1.isPointer
+      a.qualifier=a1.qualifier
+      a.specifier=a1.specifier
+      a.storage=a1.storage
+      a.scope=a1.scope
+      a.value=a1.value
+      a.isFunction=a1.isFunction
+      a.isString=a1.isString
+      a.offset=a1.offset
+      a.numParameters=a1.numParameters
+      #ParameterList      
+      for i in range(a1.numParameters):
+	    if a1.parameterList[i] == None:
+		  break
+	    a.parameterList[i] = copyAttribute(a1.parameterList[i])
+      return a
+
+def initAttr(a):
+      a.id=None
+      a.type=None	
+      a.isArray=0		# True if variable is array
+      a.ArrayLimit=0	#upper limit of array (valid if DIMENSION is true)
+      a.width=0
+      a.isPointer=0
+      a.qualifier=0
+      a.specifier=0
+      a.storage=0
+      a.scope=0
+      a.value=None
+      a.isString=0
+      a.offset=0			#0 means not
+      a.numParameters=0
+      a.isFunction=0
+      for i in range(MaxPar):      
+	    a.parameterList[i]=None
+      return a
+      
+      
+=======
+>>>>>>> 5c38170289ae94efda4fd09b4ae1f470e1b9e5b6
 ############################################
 #########################################
 ###########################################
@@ -316,6 +391,8 @@ def p_variant(p):
 
 ###########################################################
 
+<<<<<<< HEAD
+=======
 #######################################################################
 ##########Added by Lovish#############################################
 ######################################################################
@@ -359,6 +436,7 @@ def p_relexpr(p):
 		
 	   
 
+>>>>>>> 5c38170289ae94efda4fd09b4ae1f470e1b9e5b6
 def p_expr(p):
 	'''expr : RESULT
 		| CURRENT
@@ -375,6 +453,14 @@ def p_expr(p):
 		| NOT expr
 		| FREEOP expr %prec NOT
 		| expr FREEOP expr
+<<<<<<< HEAD
+		
+		| OLD expr
+		| STRIP '(' attr_list ')' '''
+		
+def p_relexpr(p):
+	'''expr : expr '=' expr
+=======
 		| expr '+' expr
 		| expr '-' expr
 		| expr '*' expr
@@ -383,20 +469,115 @@ def p_expr(p):
 		| expr DIVIDE expr
 		| expr INT_DIVIDE expr
 		| expr '=' expr
+>>>>>>> 5c38170289ae94efda4fd09b4ae1f470e1b9e5b6
 		| expr NOT_EQUAL expr
 		| expr '<' expr
 		| expr '>' expr
 		| expr LESS_EQUAL expr
+<<<<<<< HEAD
+		| expr GREATER_EQUAL expr'''
+	if p[2]== '=':
+		if p[1].value==p[3].value:
+			p[0].value=True
+		else:
+			p[0]=False
+	elif p[2]== 'NOT_EQUAL':
+		if p[1].value!=p[3].value:
+			p[0].value=True
+		else:
+			p[0]=False
+	elif p[2]=='<':
+		if p[1].value<p[3].value:
+			p[0].value=True
+		else:
+			p[0].value=False
+	elif p[2]=='>':
+		if p[1].value>p[3].value:
+			p[0].value=True
+		else:
+			p[0].value=False
+	elif p[2]=='LESS_EQUAL' :
+		if p[1].value>=p[3].value:
+			p[0].value=True
+		else:
+			p[0].value=False
+	elif p[2]=='GREATER_EQUAL'
+	    if p[1].value<=p[3].value:
+			p[0].value=True
+		else:
+			p[0].value=False
+						
+													
+					
+			
+def p_arithexpr(p):
+	'''expr: expr PLUS expr
+		| expr MINUS expr
+		| expr TIMES expr
+		| expr DIVIDE expr
+		| expr POWER expr
+		| expr INT_DIVIDE expr
+		| expr INT_REMAINDER expr'''
+	p[0]=Attribute()
+	#p[0].type=	
+	if p[2]=='+':
+		p[0].value=p[1].value+p[3].value
+	elif p[2]=='-':
+		p[0].value=p[1].value-p[3].value
+	elif p[2]=='*':
+		p[0].value=p[1].value*p[3].value
+	elif p[2]=='/':
+		p[0].value=p[1].value/p[3].value
+	elif p[2]=='^':
+		p[0].value=p[1].value^p[3].value
+	elif p[2]=='//':
+		p[0].value=int(p[1].value/p[3].value)	
+	elif p[2]=='\\':
+		p[0].value=int(p[1].value%p[3].value)	
+
+def p_boolexpr(p):
+	'''expr: expr AND expr
+=======
 		| expr GREATER_EQUAL expr
 		| expr AND expr
+>>>>>>> 5c38170289ae94efda4fd09b4ae1f470e1b9e5b6
 		| expr OR expr
 		| expr XOR expr
 		| expr AND_THEN expr %prec AND
 		| expr OR_ELSE expr %prec OR
+<<<<<<< HEAD
+		| expr IMPLIES expr'''
+	p[0]=Attribute()	
+	p[0].type=bool	
+	if p[2]='and' :
+		p[0].value=bool(p[1].value and p[3].value)
+	elif p[2]='or':
+		p[0].value=bool(p[1].value or p[3].value)	
+	elif p[2]='xor':
+		p[0].value=bool((p[1].value and not p[3].value) or (p[3].value and not p[1].value))
+	elif p[2]='and_then':
+		if bool(p[1].value)==False):
+			p[0].value=False
+		else:	
+			p[0].value=bool( p[3].value)						
+	elif p[2]='or_else':
+		if bool(p[1].value)==True):
+			p[0].value=True
+		else:	
+			p[0].value=bool( p[3].value)
+	elif p[2]='implies':
+		if bool(p[1].value)==False):
+			p[0].value=True
+		else:	
+			p[0].value=bool( p[3].value)				
+					
+                
+=======
 		| expr IMPLIES expr
 		| OLD expr
 		| STRIP '(' attr_list ')' '''
 
+>>>>>>> 5c38170289ae94efda4fd09b4ae1f470e1b9e5b6
 def attr_list(p):
 	'''attr_list : IDENTIFIER
 		| attr_list ',' IDENTIFIER

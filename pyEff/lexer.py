@@ -9,6 +9,7 @@ import ply.lex as lex
 # List of token names.   This is always required
 Keywords = {
 	'and':'AND',
+	'arrow' : 'ARROW',
 	'or':'OR',
 	'true':'TRUE',
 	'false':'FALSE',
@@ -22,7 +23,8 @@ Keywords = {
 	'inspect':'INSPECT',
 	'when':'WHEN',
 	'loop':'LOOP',
-	'until':'FROM',
+	'until': 'UNTIL',
+	'from': 'FROM',
 	'class':'CLASS',
 	'creation':'CREATION',
 	'do':'Do',
@@ -67,13 +69,17 @@ Keywords = {
 	'once' : 'ONCE',
 	'redefine' : 'REDEFINE',
 	'rename' : 'RENAME',
+	'reverse' : 'REVERSE',
 	'resque' : 'RETRY',
+	'result' : 'RESULT',
 	'select' : 'SELECT',
 	'seperate' : 'SEPERATE',
 	'undefine' : 'UNDEFINE',
+	'unique' : 'UNIQUE',
 
 }
 tokens =  [
+   'POWER'
    'INTEGER',
    'REAL',
    'CHARACTER',

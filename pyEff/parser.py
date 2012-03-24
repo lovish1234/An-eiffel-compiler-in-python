@@ -1,5 +1,4 @@
-####Parser.py####
-
+##########parser.py##############
 import sys
 import ply.yacc as yacc
 import lexer as lex
@@ -132,7 +131,7 @@ def p_inheritance(p):
 def p_inh_list(p):
 	'''inh_list : class_element
 		    | inh_list class_element
-		    | inh_list COLON class_element'''
+		    | inh_list SEPARTOR class_element'''
 		    #| empty'''
 
 def p_class_element(p):
@@ -171,8 +170,8 @@ def p_rename(p):
 
 def p_rname_list(p):				###INFIX and PREFIX not present
 	'''rname_list : fname ASSIGN fname
-		      | rname_list COMMA fname ASSIGN fname'''
-		      #| empty'''
+		      | rname_list COMMA fname ASSIGN fname
+		      | empty'''
  
 ########################################################
 
@@ -186,7 +185,7 @@ def p_export(p):
 def p_elist(p):
 	'''elist : eitem
 		 | elist eitem
-		 | elist COMMA eitem'''
+		 | elist SEPARTOR eitem'''
 		 #| empty'''
 
 def p_eitem(p):
@@ -198,8 +197,8 @@ def p_routine(p):
 
 def p_routine_list(p):
 	'''routine_list : fname
+		  	| routine_list COMMA fname
 			| empty'''
-		  	#| routine_list COMMA fname'''
 
 ##################################################
 
@@ -208,8 +207,8 @@ def p_users(p):
 
 def p_class_list(p):
 	'''class_list : IDENTIFIER
-		      | class_list COMMA IDENTIFIER
-		      | empty'''
+		      | class_list COMMA IDENTIFIER'''
+		      #| empty'''
 
 #####################################################
 
@@ -265,7 +264,7 @@ def p_fblock(p):
 def p_fdec_list(p):
 	'''fdec_list : fdec
 		     | fdec_list fdec
-		     | fdec_list COLON fdec'''
+		     | fdec_list SEPARTOR fdec'''
 		     #| empty'''
 
 ######################################################
@@ -278,16 +277,16 @@ def p_new_feature(p):
 		       | FROZEN fname'''
 
 def p_fbody(p):
-	'''fbody : arg_type_opt basic_body'''
+	'''fbody : arg_opt type_opt basic_body'''
 
-def p_arg_type_opt(p):
-	'''arg_type_opt : LPAREN entity_list RPAREN COLON type
+def p_arg_opt(p):
+	'''arg_opt : LPAREN entity_list RPAREN
 		   | empty '''
 
 def p_entity_list(p):
 	'''entity_list : entity_group
 		       | entity_list entity_group
-		       | entity_list COMMA entity_group'''
+		       | entity_list SEPARTOR entity_group'''
 		       #| empty'''
 
 def p_entity_group(p):
@@ -299,9 +298,9 @@ def p_idlist(p):
 
 ######################################################
 
-#def p_type_opt(p):
-#	'''type_opt : COLON type
-#		    | empty'''
+def p_type_opt(p):
+	'''type_opt : COLON type
+		    | empty'''
 
 ######################################################
 
@@ -318,12 +317,11 @@ def p_fvalue(p):
 #############################3##############################
 
 def p_function(p):
-	'''function : function_body END''' 	#Extend for Obsolete
-						#Extend for Precondition
+	'''function : precondition_opt function_body postcondition_opt END''' 	
+						#Extend for Obsolete
 						#Extend for Local Variables
-						#Extend for Postcondition
 						#Extend for Rescue
-	
+
 def p_function_body(p):
 	'''function_body : DEFERRED
 			 | Do fnbody
@@ -334,6 +332,21 @@ def p_exname(p):
 	'''exname : ALIAS STRING
 		  | empty'''
 
+def p_precondition_opt(p):
+	'''precondition_opt : REQUIRE assertion
+			    | REQUIRE THEN assertion
+			    | empty'''
+
+def p_assertion(p):
+	'''assertion : assertion_clause
+		     | assertion assertion_clause
+		     | assertion SEPARTOR assertion_clause'''
+		     #| empty'''
+
+def p_asseriton_clause(p):
+	'''assertion_clause : expr
+		     	    | IDENTIFIER COLON expr''' 
+
 def p_fnbody(p):
 	'''fnbody : ins
 		  | fnbody ins'''
@@ -343,7 +356,7 @@ def p_ins(p):
 	'''ins : assignment
 	       | conditional
 	       | loop
-	       | COMMA '''		#Extend for calling a feature
+	       | SEPARTOR'''		#Extend for calling a feature
 					#Extend for creation of an object
 					#Extend for multi branches
 					#Extend for debug
@@ -391,6 +404,10 @@ def p_variant(p):
 
 ###########################################################
 
+def p_postcondition_opt(p):
+	'''postcondition_opt : ENSURE assertion
+			 | ENSURE THEN assertion
+			 | empty'''
 
 
 #######################################################################
@@ -616,5 +633,14 @@ precedence = (
 	
 )
 
-yacc.yacc()
+parser = yacc.yacc()
+
+while True:
+   try:
+       s = raw_input()
+   except EOFError:
+       break
+   if not s: continue
+   result = parser.parse(s)
+   print result
 

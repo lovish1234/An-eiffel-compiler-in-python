@@ -3,7 +3,6 @@ import sys
 import ply.yacc as yacc
 import lexer as lex
 from lexer import tokens
-import symboltable as symb
 
 
 
@@ -25,7 +24,7 @@ class Attribute:
             self.numParameters = 0
             self.isString = 0
             self.offset = 0
-            self.parameterList = [None]*MaxPar
+            #self.parameterList = [None]*MaxPar
 
 
 def copyAttribute(a1):      
@@ -310,7 +309,7 @@ def p_basic_body(p):
 		      | empty'''
 
 def p_fvalue(p):
-	'''fvalue : manifest_constant
+	'''fvalue : manifest_const
 		  | UNIQUE
 		  | function'''		#manifest_constant not known
 					#UNIQUE not defined
@@ -357,7 +356,7 @@ def p_ins(p):
 	'''ins : assignment
 	       | conditional
 	       | loop
-	       | SEPARTOR'''		#Extend for calling a feature
+	       | SEPARTOR''' 		#Extend for calling a feature
 					#Extend for creation of an object
 					#Extend for multi branches
 					#Extend for debug
@@ -368,11 +367,11 @@ def p_ins(p):
 
 def p_assignment(p):
 	'''assignment : variable ass_op expr'''
+	
 
 def p_variable(p):
 	'''variable : IDENTIFIER
 		    | RESULT'''
-
 
 def p_ass_op(p):
 	'''ass_op : ASSIGNMENT'''
@@ -415,14 +414,11 @@ def p_postcondition_opt(p):
 ##########Added by Lovish#############################################
 ######################################################################
 	
-def p_relexpr(p):
+def p_relexpr1(p):
 	'''expr : expr EQUAL expr
-		| expr NOT_EQUAL expr
-		| expr GREATER expr
-		| expr LESS expr
-		| expr LESS_EQUAL expr
-		| expr GREATER_EQUAL expr'''
-
+		| expr NOT_EQUAL expr'''
+	
+	p[0] = Attribute()
 	if p[2] == '=':
 		if p[1].value==p[3].value:
 			p[0].value=True
@@ -433,7 +429,20 @@ def p_relexpr(p):
 			p[0].value=True
 		else:
 			p[0].value=False
-	elif p[2] =='<':
+
+	p[0].type = 'BOOL'
+
+def p_relexpr2(p):
+	'''expr : expr GREATER expr
+		| expr LESS expr
+		| expr LESS_EQUAL expr
+		| expr GREATER_EQUAL expr'''
+
+	p[0] = Attribute()
+	if not(p[1].type == 'INT' or p[1].type == 'REAL') or not(p[3].type == 'INT' or p[3].type == 'REAL'):
+		raise TypeError
+	
+	if p[2] =='<':
 		if p[1].value<p[3].value:
 			p[0].value=True
 		else:
@@ -453,7 +462,7 @@ def p_relexpr(p):
 			p[0].value=True
 		else:
 			p[0].value=False
-	p[0].type = bool		
+	p[0].type = 'BOOL'
 
 			
 def p_arithexpr(p):
@@ -466,26 +475,63 @@ def p_arithexpr(p):
 		#| expr POWER expr'''
 
 	p[0]=Attribute()
-	if p[2]=='+':
-		p[0].value=p[1].value+p[3].value
-		p[0].type = p[1].type
-	elif p[2]=='-':
-		p[0].value=p[1].value-p[3].value
-		p[0].type = p[1].type
-	elif p[2]=='*':
-		p[0].value=p[1].value*p[3].value
-		p[0].type = p[1].type
-	elif p[2]=='/':
-		p[0].value=p[1].value/p[3].value
-		p[0].type = p[1].type
-	elif p[2]=='^':
-		p[0].value=p[1].value^p[3].value
-		p[0].type = p[1].type
-	elif p[2]=='//':
+	if not(p[1].type == 'INT' or p[1].type == 'REAL') or not(p[3].type == 'INT' or p[3].type == 'REAL'):
+		raise TypeError
+
+	if p[2]=='//':
+		#if not(p[1].type == 'INT' or p[1].type == 'REAL') or not(p[3].type == 'INT' or p[3].type == )
 		p[0].value=int(p[1].value/p[3].value)
-		p[0].type = int	
+		p[0].type = 'INT'
+
 	elif p[2]=='\\':
-		p[0].value=int(p[1].value%p[3].value)	
+		p[0].value=int(p[1].value%p[3].value)
+		p[0].type = 'INT'
+
+	else:
+		if (p[1].type == "INT" and p[3].type == 'INT'):
+			p[0].type = 'INT'
+			a = p[1].value
+			b = p[3].value
+
+		elif (p[1].type == "INT" and p[3].type == 'REAL'):
+			p[0].type = 'REAL'
+			a = float(p[1].value)
+			b = p[3].value
+
+		elif (p[1].type == "REAL" and p[3].type == 'INT'):
+			p[0].type = 'REAL'
+			a = p[1].value
+			b = float(p[3].value)
+
+		elif (p[1].type == "REAL" and p[3].type == 'REAL'):
+			p[0].type = 'REAL'
+			a = p[1].value
+			b = p[3].value
+
+		else: raise TypeError
+
+		if p[2]=='+':
+			p[0].value = a + b
+
+		elif p[2]=='-':
+			p[0].value = a - b
+
+		elif p[2]=='*':
+			p[0].value = a*b
+
+		elif p[2]=='/':
+			p[0].value = a/b			
+
+		elif p[2]=='^':
+			p[0].value = a^b
+			
+#	elif p[2]=='//':
+#		p[0].value=int(p[1].value/p[3].value)
+#		p[0].type = 'INT'
+#	elif p[2]=='\\':
+#		p[0].value=int(p[1].value%p[3].value)
+#		p[0].type = 'INT'
+
 
 def p_boolexpr(p):
 	'''expr : expr AND expr
@@ -494,38 +540,62 @@ def p_boolexpr(p):
 		| expr AND_THEN expr 
 		| expr OR_ELSE expr
 		| expr IMPLIES expr'''
-	p[0]=Attribute()	
-	p[0].type=bool	
+	p[0]=Attribute()
+	
+	if (p[1].type != 'BOOL') and (p[3].type != 'BOOL'):
+		raise TypeError
+	p[0].type='BOOL'
+
 	if p[2] == 'and' :
 		p[0].value=bool(p[1].value and p[3].value)
+
 	elif p[2]=='or':
 		p[0].value=bool(p[1].value or p[3].value)	
+
 	elif p[2]=='xor':
 		p[0].value=bool((p[1].value and not p[3].value) or (p[3].value and not p[1].value))
-	elif p[2]=='and_then':
+
+	elif p[2]=='AND_THEN':
+
 		if bool(p[1].value)==False:
 			p[0].value=False
+
 		else:	
 			p[0].value=bool(p[3].value)						
-	elif p[2]=='or_else':
+
+	elif p[2]=='OR_ELSE':
+
 		if bool(p[1].value)==True:
 			p[0].value=True
+
 		else:	
 			p[0].value=bool(p[3].value)
+
 	elif p[2]=='implies':
+
 		if bool(p[1].value)==False:
 			p[0].value=True
+
 		else:	
 			p[0].value=bool(p[3].value)				
 					
-def p_expr(p):
-	'''expr : RESULT
-		| CURRENT
-		| LPAREN expr RPAREN
-		| bool_const
-		| CHARACTER
-		| INTEGER
-		| REAL'''
+def p_expr1(p):
+	'''expr : manifest_const'''
+	p[0] = copyAttribute(p[1])
+#	print "I was here"
+
+def p_expr2(p):
+	'''expr : LPAREN expr RPAREN'''
+	p[0] = copyAttribute(p[2])
+
+def p_expr3(p):
+	'''expr : CURRENT'''
+
+def p_expr4(p):
+	'''expr	: IDENTIFIER'''
+	p[0] = Attribute()
+	p[0].value = 0 #Add symbol table lookup command 
+	
 		#| BIT
 		#| LARRAY expr_list RARRAY 
 		#| NOT expr
@@ -533,7 +603,7 @@ def p_expr(p):
 		#| expr FREEOP expr
 		
 		#| OLD expr
-	
+		#| STRIP '(' attr_list ')' '''
 		
                 
 #=======
@@ -542,10 +612,6 @@ def p_expr(p):
 #		| STRIP '(' attr_list ')' '''
 
 #>>>>>>> 5c38170289ae94efda4fd09b4ae1f470e1b9e5b6
-		
-def p_expr_string(p):
-		'''expr	: STRING'''
-		p[0].isString=1
 def p_attr_list(p):
 	'''attr_list : IDENTIFIER
 		     | attr_list COMMA IDENTIFIER
@@ -557,12 +623,29 @@ def p_expr_list(p):
 		     | empty'''
 
 
-def p_manifest_constant(p):
-	'''manifest_constant : bool_const
-		    	     | CHARACTER
-		    	     | int_const
-		    	     | real_const
-		             | STRING'''
+def p_manifest_const1(p):
+	'''manifest_const : bool_const
+			  | int_const
+			  | real_const'''
+#	print "I was here2"
+	p[0] = copyAttribute(p[1])
+
+def p_kachara(p):
+	'''kachara : empty'''
+	print "I am here"
+
+def p_manifest_const2(p):
+	'''manifest_const : CHARACTER'''
+	p[0] = Attribute()
+	p[0].value = str(p[0])
+	p[0].type = 'STR'
+
+def p_manifest_const3(p):
+	'''manifest_const : STRING'''
+	p[0] = Attribute()
+	p[0].value = str(p[0])
+	p[0].type = 'STR'
+	
 		    	     #| BIT'''	#define BIT type in the lexer file
 
 		#Note: Does not support 'Wide_character_constant'.
@@ -572,19 +655,39 @@ def p_manifest_constant(p):
 def p_bool_const(p):
 	'''bool_const : TRUE
 		      | FALSE'''
+	p[0] = Attribute()
+	p[0].value = bool(p[1])
+	p[0].type = 'BOOL'
 
 def p_int_const(p):
 	'''int_const : INTEGER
 		     | MINUS INTEGER %prec UMINUS
 		     | PLUS INTEGER %prec UPLUS'''
-
+	#print "I was here"
+	p[0] = Attribute()
+	if (len(p) == 1):
+		p[0].value = int(p[1])
+	elif (len(p)==2):
+		if p[1] == '-':
+			p[0].value = -int(p[2])
+		elif p[1] == '+':
+			p[0].value = +int(p[2])
+	p[0].type = 'INT'
 
 def p_real_const(p):
 	'''real_const : REAL
 		      | MINUS REAL %prec UMINUS
 		      | PLUS REAL %prec UPLUS'''
+	p[0] = Attribute()
+	if (len(p) == 1):
+		p[0].value = float(p[1])
+	elif (len(p)==2):
+		if p[1] == '-':
+			p[0].value = -float(p[2])
+		elif p[1] == '+':
+			p[0].value = +float(p[2])
+	p[0].type = 'REAL'
 	
-
 #######################################################
 ######################################################
 
@@ -593,8 +696,7 @@ def p_fname(p):
 		 #| PREFIX STRING
 		 #| INFIX STRING'''		#INFIX and PREFIX not yet defined, they can be made optional.
 					#valid INFIX and PREFIX operators can be checked by the manifest string.
-	p[0].isFunction=1
-	
+
 ###################################################
 
 def p_type(p):

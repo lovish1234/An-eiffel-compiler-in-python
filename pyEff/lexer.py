@@ -79,7 +79,7 @@ Keywords = {
 
 }
 tokens =  [
-   'POWER'
+   
    'INTEGER',
    'REAL',
    'CHARACTER',
@@ -120,7 +120,7 @@ tokens =  [
    'BININT',
    'STRING',
    'COMMA',
-   'AT_SIGN'
+   'AT_SIGN'  
 ]+ list(Keywords.values())
 
 

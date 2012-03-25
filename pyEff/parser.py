@@ -2,6 +2,7 @@ import sys
 import ply.yacc as yacc
 import lexer as lex
 from lexer import tokens
+import symboltable as symb
 
 
 
@@ -505,8 +506,7 @@ def p_expr(p):
 		| bool_const
 		| CHARACTER
 		| INTEGER
-		| REAL
-		| STRING'''
+		| REAL'''
 		#| BIT
 		#| LARRAY expr_list RARRAY 
 		#| NOT expr
@@ -514,7 +514,7 @@ def p_expr(p):
 		#| expr FREEOP expr
 		
 		#| OLD expr
-		#| STRIP '(' attr_list ')' '''
+	
 		
                 
 #=======
@@ -523,6 +523,10 @@ def p_expr(p):
 #		| STRIP '(' attr_list ')' '''
 
 #>>>>>>> 5c38170289ae94efda4fd09b4ae1f470e1b9e5b6
+		
+def p_expr_string(p):
+		'''expr	: STRING'''
+		p[0].isString=1
 def p_attr_list(p):
 	'''attr_list : IDENTIFIER
 		     | attr_list COMMA IDENTIFIER
@@ -570,7 +574,8 @@ def p_fname(p):
 		 #| PREFIX STRING
 		 #| INFIX STRING'''		#INFIX and PREFIX not yet defined, they can be made optional.
 					#valid INFIX and PREFIX operators can be checked by the manifest string.
-
+	p[0].isFunction=1
+	
 ###################################################
 
 def p_type(p):

@@ -3,8 +3,9 @@ import sys
 import ply.yacc as yacc
 import lexer as lex
 from lexer import tokens
+from symboltable import *
 
-
+scope = Scope(None)
 
 class Attribute:
     global MaxPar
@@ -20,11 +21,15 @@ class Attribute:
             self.storage = 0
             self.scope = 0
             self.value=None    
-            self.isFunction = 0
+            self.isfunction = 0
             self.numParameters = 0
             self.isString = 0
             self.offset = 0
+<<<<<<< HEAD
+	    self.parameterList = []
+=======
             #self.parameterList = [None]*MaxPar
+>>>>>>> 7e9eab6afb22cd30e7a43c0353b6a7a308f28c22
 
 
 def copyAttribute(a1):      
@@ -271,30 +276,70 @@ def p_fdec_list(p):
 
 def p_fdec(p):
 	'''fdec : new_feature fbody'''
+	
 
 def p_new_feature(p):
 	'''new_feature : fname
 		       | FROZEN fname'''
+	if len(p) == 1:
+		scope.lookUp(p[1]).attributes['frozen'] = False
+		p[0] = p[1] 
+	else:
+		scope.lookUp(p[1]).attributes['frozen'] = True
+		p[0] = p[1] 
+		
 
 def p_fbody(p):
 	'''fbody : arg_opt type_opt basic_body'''
+	p[0] = Attribute()
+	if p[1] == None and p[3] == None:
+		pass#p =
+	else:
+		p[0].type = p[2]
+		p[0].numParameters = len(p[1])
+		p[0].parameterList = p[1]
+		p[0].isfunction = True
 
 def p_arg_opt(p):
 	'''arg_opt : LPAREN entity_list RPAREN
 		   | empty '''
+	if len(p) == 3:
+		a = []
+		scope = Scope(scope)
+		for i in p[2]:
+			a.append[i[1]]
+			x = scope.insert(Token(i[1]))
+			if not x:
+				raise DoubleDeclaration
+			scope.lookUp(i[1]).type = i[2]
+		p[0] = a
+		
+	else:
+		p[0] = None
 
 def p_entity_list(p):
 	'''entity_list : entity_group
 		       | entity_list entity_group
 		       | entity_list SEPARTOR entity_group'''
 		       #| empty'''
+	if len(p) == 1:
+		p[0] =[p[1]]
+	elif len(p) == 2:
+		p[0] = p[1].append(p[2])
+	else:
+		p[0] = p[1].append(p[3])
+		
 
 def p_entity_group(p):
 	'''entity_group : idlist COLON type'''
+	p[0] = (p[1], rtype(p[3]))
 
 def p_idlist(p):
-	'''idlist : IDENTIFIER
-		  | idlist COMMA IDENTIFIER'''
+	'''idlist : IDENTIFIER'''
+		  #| idlist COMMA IDENTIFIER'''
+	p[0] = p[1]
+
+		
 
 ######################################################
 
@@ -307,20 +352,46 @@ def p_type_opt(p):
 def p_basic_body(p):
 	'''basic_body : IS fvalue
 		      | empty'''
+	if len(p) == 2:
+		pass#
+	else:
+		p[0] = None
 
 def p_fvalue(p):
+<<<<<<< HEAD
+	'''fvalue : manifest_const'''
+
+def p_fvalue2(p):
+	'''fvalue : UNIQUE'''
+
+def p_fvalue3(p):
+	'''fvalue : function'''
+=======
 	'''fvalue : manifest_const
 		  | UNIQUE
 		  | function'''		#manifest_constant not known
 					#UNIQUE not defined
+>>>>>>> 7e9eab6afb22cd30e7a43c0353b6a7a308f28c22
 
 #############################3##############################
 
 def p_function(p):
-	'''function : precondition_opt function_body postcondition_opt END''' 	
+	'''function : precondition_opt local_opt function_body postcondition_opt END''' 	
 						#Extend for Obsolete
 						#Extend for Local Variables
 						#Extend for Rescue
+	if p[2] != None:
+		#for i in p[2]:
+			#a = []
+			#scope = Scope(scope)
+		for i in p[2]:
+			#a.append[i[1]]
+			x = scope.insert(Token(i[1]))
+			if not x:
+				raise DoubleDeclaration
+			scope.lookUp(i[1]).type = i[2]
+			
+		
 
 def p_function_body(p):
 	'''function_body : DEFERRED
@@ -347,6 +418,16 @@ def p_asseriton_clause(p):
 	'''assertion_clause : expr
 		     	    | IDENTIFIER COLON expr''' 
 
+def p_local_opt(p):
+	'''local_opt : LOCAL entity_list
+		     | empty'''
+	if len(p) == 2:
+		print p[1]
+		print "%s" % p
+		p[0] = p[2]
+	else:
+		p[0] = None
+
 def p_fnbody(p):
 	'''fnbody : ins
 		  | fnbody ins'''
@@ -367,11 +448,26 @@ def p_ins(p):
 
 def p_assignment(p):
 	'''assignment : variable ass_op expr'''
+<<<<<<< HEAD
+	if p[1] == 'result':
+		if scope.isfunction:
+			scope.result = copyAttribute(p[3])
+	else:
+		if scope.lookUp(p[1]).type == p[3].type:
+			scope.lookUp(p[1]).attributes['value'] = p[3]
+			p[0] =  None
+		else: raise TypeError
+=======
+>>>>>>> 7e9eab6afb22cd30e7a43c0353b6a7a308f28c22
 	
 
 def p_variable(p):
 	'''variable : IDENTIFIER
 		    | RESULT'''
+<<<<<<< HEAD
+	p[0] = p[1]
+=======
+>>>>>>> 7e9eab6afb22cd30e7a43c0353b6a7a308f28c22
 
 def p_ass_op(p):
 	'''ass_op : ASSIGNMENT'''
@@ -381,15 +477,22 @@ def p_ass_op(p):
 
 def p_conditional(p):
 	'''conditional : IF expr THEN fnbody elseif_group else_opt END'''
+	if p[2].type != 'BOOL':
+		raise TypeError
+		
 
 def p_elseif_group(p):
 	'''elseif_group : elseif_group ELSEIF expr THEN fnbody
 			| empty'''
+	if len(p) > 0:
+		if p[3].type != 'BOOL':
+			raise TypeError
 			#| ELSEIF expr THEN fnbody'''
 
 def p_else_opt(p):
 	'''else_opt : ELSE fnbody
 		    | empty'''
+	
 
 ########################################################
 
@@ -406,8 +509,8 @@ def p_variant(p):
 
 def p_postcondition_opt(p):
 	'''postcondition_opt : ENSURE assertion
-			 | ENSURE THEN assertion
-			 | empty'''
+			     | ENSURE THEN assertion
+			     | empty'''
 
 
 #######################################################################
@@ -693,6 +796,8 @@ def p_real_const(p):
 
 def p_fname(p):
 	'''fname : IDENTIFIER'''
+	p[0] = p[1]
+	scope.insert(Token(p[1]))
 		 #| PREFIX STRING
 		 #| INFIX STRING'''		#INFIX and PREFIX not yet defined, they can be made optional.
 					#valid INFIX and PREFIX operators can be checked by the manifest string.
@@ -704,6 +809,8 @@ def p_type(p):
 		| EXPANDED class_type
 		| LIKE CURRENT
 		| LIKE IDENTIFIER'''
+	if len(p) == 1:
+		p[0] = p[1]
 		#| SEPARATE class_type
 		#| BITTYPE int_constant
 		#| BITTYPE IDENTIFIER'''		#integer_constant yet to be defined
@@ -711,6 +818,7 @@ def p_type(p):
 
 def p_class_type(p):
 	'''class_type : IDENTIFIER generic'''
+	p[0] = p[1]
 
 def p_generic(p):
 	'''generic : LSQUARE type_list RSQUARE
